@@ -17,10 +17,10 @@ type CustomerDetails =
     }
 
     static member Default =
-    {
-        CustomerName = None
-        Preference = None
-    }
+        {
+            CustomerName = None
+            Preference = None
+        }
 
 let getCustomerName (row:CustomerDetailsType.Row) (customerDetails: CustomerDetails) =
     match row.``Customer Name`` with
@@ -152,7 +152,7 @@ let readDataAndSaveToFile startDate file =
         File.WriteAllLines (file, outputData)
         Console.WriteLine $"Customer notification details output to file '{file}'"
     with
-        | :? Exception as ex -> displayError ex.Message    
+        ex -> displayError ex.Message    
 
 let displayHelp () =
     Console.ForegroundColor <- ConsoleColor.Green
