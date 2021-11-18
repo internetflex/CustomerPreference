@@ -166,18 +166,30 @@ let displayHelp () =
     Console.WriteLine "**********************************\n"
     Console.ForegroundColor <- ConsoleColor.White
 
+let validateArgCount (argv:string array) =
+    match argv.Length with
+    | 0 -> Error ""
+    | 1 | 2 -> Ok argv
+    | _ -> Error "Invalid number of parameters"
+
+let validateDateArgs (argv:string array) =
+    match tryParseDate argv.[0] with
+    | Some date -> Ok (date,argv.Length)
+    | None -> Error $"Invalid date parameter {argv.[0]}"
+
+let inputValidation (argv:string array) =
+    Ok argv |> Result.bind validateArgCount
+            |> Result.bind validateDateArgs
+
 [<EntryPoint>]
 let main argv =        
-    match argv.Length with
-    | 0 -> displayHelp ()
-    | 1 -> match tryParseDate argv.[0] with
-           | Some date -> readDataAndDisplayReport date
-           | None -> displayWarning $"Invalid date parameter {argv.[0]}"
-    | 2 -> match tryParseDate argv.[0] with
-           | Some date -> readDataAndSaveToFile date argv.[1]
-           | None -> displayWarning $"Invalid date parameter {argv.[0]}"           
-    | _ -> displayWarning "Invalid number of parameters"
-    
+    match argv |> inputValidation with
+    | Error msg when msg = "" -> displayHelp ()
+    | Error msg -> displayWarning msg
+    | Ok (date,1) -> readDataAndDisplayReport date
+    | Ok (date,2) -> readDataAndSaveToFile date argv.[1]
+    | _ -> failwith "Unexpected error in input"
+
     Console.ForegroundColor <- ConsoleColor.Green
     Console.WriteLine "\nProgram finished"
     Console.WriteLine "Press return to exit"
